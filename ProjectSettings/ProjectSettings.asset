@@ -827,7 +827,8 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    VisionOS: VUPLEX_POLYSPATIAL;VUPLEX_VISIONOS_XR
+    Standalone: VUPLEX_POLYSPATIAL;VUPLEX_VISIONOS_XR;VUPLEX_STANDALONE
+    VisionOS: VUPLEX_POLYSPATIAL;VUPLEX_VISIONOS_XR;VUPLEX_STANDALONE
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}

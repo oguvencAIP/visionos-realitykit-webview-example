@@ -11,6 +11,10 @@ EditorBuildSettings:
   m_configObjects:
     UnityEditor.XR.VisionOS.VisionOSSettings: {fileID: 11400000, guid: 42baa971a323f4885b5bbc2e0f10733e,
       type: 2}
+    com.unity.input.settings: {fileID: 11400000, guid: 490f30f928a9e48ca9b90e447524da8e,
+      type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 660d0bc49ad5feb4e83f78a97d15b9fc,
+      type: 3}
     com.unity.polyspatial.xr.xr_settings: {fileID: 11400000, guid: 268bebcf725cc426191967091b56d1f6,
       type: 2}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: ca5bf15e7d83b46ccb6e5c274f14b22a,

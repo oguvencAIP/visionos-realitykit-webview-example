@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using UnityEngine;
-using Unity.PolySpatial;
 using Vuplex.WebView;
 
 /// <summary>
@@ -9,52 +8,75 @@ using Vuplex.WebView;
 /// </summary>
 public class VisionOSRealityKitWebViewExample : MonoBehaviour {
 
-    IWebView webView;
+    private IWebView webView;
 
     async void Start() {
-        
-        #if UNITY_VISIONOS && !UNITY_EDITOR
-            // When running on the visionOS device or simulator, use VisionOSWebView.CreateInWindow()
-            // to open a webview in a native visionOS window:
-            // https://developer.vuplex.com/webview/VisionOSWebView#CreateInWindow
-            webView = await VisionOSWebView.CreateInWindow();
-        #else
-            // The VisionOSWebView.CreateInWindow() API isn't supported in the Editor, so when running in the Editor,
-            // fall back to creating a WebViewPrefab to display in the scene.
-            // https://developer.vuplex.com/webview/WebViewPrefab
-            webView = await _createWebViewForEditor();
-        #endif
+        Debug.Log("Starting VisionOS RealityKit WebView Example...");
 
-        // Now that the IWebView is created, the app can use IWebView APIs like LoadUrl()
-        // https://developer.vuplex.com/webview/IWebView
-        webView.LoadUrl("https://www.google.com");
+        try {
+            #if UNITY_VISIONOS && !UNITY_EDITOR
+                Debug.Log("Initializing VisionOS WebView...");
+                webView = await VisionOSWebView.CreateInWindow();
+                Debug.Log("VisionOS WebView initialized successfully.");
+            #else
+                Debug.Log("Creating WebView for Editor or macOS...");
+                webView = await _createWebViewForEditor();
+                Debug.Log("WebView for Editor or macOS initialized successfully.");
+            #endif
 
-        // If either the Volume or the webview window is closed, then quit the application with Application.Quit().
-        // This ensures that if the user re-opens the app from the visionOS home view, the app starts back up in the intended state.
-        // Otherwise, the default on visionOS is that the application will remain running in the background unless
-        // the user force quits it. If the app continues to run in the background and the user re-opens it from
-        // the visionOS home view, then visionOS will only reopen the window that was open last (either the Volume or the webview
-        // window, but not both). 
-        var volumeCamera = FindFirstObjectByType<VolumeCamera>();
-        volumeCamera.WindowStateChanged.AddListener((_, state) => {
-            if (state.WindowEvent == VolumeCamera.WindowEvent.Closed) {
-                Application.Quit();
+            if (webView == null) {
+                Debug.LogError("WebView initialization returned null.");
+                return;
             }
-        });
-        #if UNITY_VISIONOS && !UNITY_EDITOR
-            (webView as VisionOSWebView).WindowClosed += (sender, eventArgs) => {
-                Application.Quit();
-            };
-        #endif
+
+            Debug.Log("Loading URL: https://www.google.com...");
+            webView.LoadUrl("https://www.google.com");
+            Debug.Log("URL loaded successfully.");
+        } catch (System.Exception ex) {
+            Debug.LogError($"An error occurred during WebView initialization: {ex.Message}\n{ex.StackTrace}");
+        }
+
+        // Check runtime assets to catch potential issues
+        Debug.Log("Checking runtime assets...");
+        CheckForMissingAssets();
     }
 
-    async Task<IWebView> _createWebViewForEditor() {
+    private void CheckForMissingAssets() {
+        try {
+            // Check for missing or invalid materials
+            var materials = Resources.FindObjectsOfTypeAll<Material>();
+            foreach (var material in materials) {
+                if (material.HasProperty("_MainTex") && material.mainTexture == null) {
+                    Debug.LogWarning($"Material '{material.name}' has no main texture assigned.");
+                }
+            }
 
+            // Log details about Texture2D assets
+            var textures = Resources.FindObjectsOfTypeAll<Texture2D>();
+            if (textures.Length == 0) {
+                Debug.LogError("No Texture2D assets found in the project.");
+            } else {
+                Debug.Log($"Found {textures.Length} Texture2D assets.");
+            }
+        } catch (System.Exception ex) {
+            Debug.LogError($"An error occurred while checking for missing assets: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    private async Task<IWebView> _createWebViewForEditor() {
+        Debug.Log("Initializing WebViewPrefab for Editor or macOS...");
+        try {
             var webViewPrefab = WebViewPrefab.Instantiate(0.6f, 0.4f);
             webViewPrefab.transform.parent = transform;
             webViewPrefab.transform.localPosition = new Vector3(0, 0.2f, 0.4f);
-            webViewPrefab.transform.localEulerAngles = new Vector3(0, 180, 0);    
+            webViewPrefab.transform.localEulerAngles = new Vector3(0, 180, 0);
+
             await webViewPrefab.WaitUntilInitialized();
+            Debug.Log("WebViewPrefab initialized successfully.");
             return webViewPrefab.WebView;
+        } catch (System.Exception ex) {
+            Debug.LogError($"Failed to initialize WebViewPrefab: {ex.Message}\n{ex.StackTrace}");
+            return null;
+        }
     }
 }
